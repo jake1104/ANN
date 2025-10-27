@@ -1,26 +1,25 @@
+# 🔁 RNN (Recurrent Neural Network) - Concepts and Implementation of Recurrent Neural Networks
 
-# 🔁 RNN (Recurrent Neural Network) - 순환 신경망의 개념과 구현
+## 1. Overview
 
-## 1. 개요
+RNN (Recurrent Neural Network) is a neural network structure designed to process **sequence data**.
+It can learn **temporal dependencies** between inputs and is typically used in **natural language processing, speech recognition, and time series prediction**.
 
-RNN(Recurrent Neural Network, 순환 신경망)은 **시퀀스 데이터(Sequence Data)** 를 처리하기 위해 설계된 신경망 구조이다.
-입력 간의 **시간적 의존성(temporal dependency)** 을 학습할 수 있으며, 대표적으로 **자연어 처리, 음성 인식, 시계열 예측** 등에서 사용된다.
-
-MLP는 입력을 독립적으로 처리하지만, RNN은 **이전 시점의 출력을 다음 시점의 입력에 반영**함으로써 순환 구조를 가진다.
+While MLPs process inputs independently, RNNs have a recurrent structure by **reflecting the output of the previous time step into the input of the next time step**.
 
 ---
 
-## 2. 구조 및 수식
+## 2. Structure and Equations
 
-### 2.1 기본 구조
+### 2.1 Basic Structure
 
-RNN은 시간 $t$에서의 입력 $x_t$, 은닉 상태 $h_t$, 출력 $y_t$ 로 구성된다.
+An RNN consists of input $x_t$, hidden state $h_t$, and output $y_t$ at time $t$.
 
-* 입력: $x_t \in \mathbb{R}^{n_x}$
-* 은닉 상태: $h_t \in \mathbb{R}^{n_h}$
-* 출력: $y_t \in \mathbb{R}^{n_y}$
+* Input: $x_t \in \mathbb{R}^{n_x}$
+* Hidden state: $h_t \in \mathbb{R}^{n_h}$
+* Output: $y_t \in \mathbb{R}^{n_y}$
 
-시점별 순환 구조는 다음과 같다:
+The time-step recurrent structure is as follows:
 
 ```
 x_t ─▶ [RNN Cell] ─▶ h_t ─▶ y_t
@@ -31,96 +30,96 @@ x_t ─▶ [RNN Cell] ─▶ h_t ─▶ y_t
 
 ---
 
-### 2.2 순전파 (Forward Propagation)
+### 2.2 Forward Propagation
 
-RNN의 핵심 수식은 다음과 같다:
+The core equations of RNN are as follows:
 
 $$
 h_t = f(W_{xh} x_t + W_{hh} h_{t-1} + b_h)
 $$
 
-$$
+$$ 
 y_t = g(W_{hy} h_t + b_y)
-$$
+$$ 
 
-여기서,
+Where,
 
-* $W_{xh} \in \mathbb{R}^{n_x \times n_h}$ : 입력 → 은닉 가중치
-* $W_{hh} \in \mathbb{R}^{n_h \times n_h}$ : 이전 은닉 → 현재 은닉 가중치
-* $W_{hy} \in \mathbb{R}^{n_h \times n_y}$ : 은닉 → 출력 가중치
-* $b_h$, $b_y$ : 편향
-* $f$ : tanh (은닉 활성화 함수)
-* $g$ : softmax (출력 활성화 함수)
+* $W_{xh} \in \mathbb{R}^{n_x \times n_h}$ : Input → Hidden weight
+* $W_{hh} \in \mathbb{R}^{n_h \times n_h}$ : Previous hidden → Current hidden weight
+* $W_{hy} \in \mathbb{R}^{n_h \times n_y}$ : Hidden → Output weight
+* $b_h$, $b_y$ : Biases
+* $f$ : tanh (Hidden activation function)
+* $g$ : softmax (Output activation function)
 
 ---
 
-### 2.3 시간 전개 (Unrolled Form)
+### 2.3 Unrolled Form
 
-시간 축으로 펼치면 다음과 같은 형태가 된다:
+Unrolled along the time axis, it takes the following form:
 
-$$
+$$ 
 \begin{align*}
 h_1 &= f(W_{xh} x_1 + W_{hh} h_0 + b_h) \\
 h_2 &= f(W_{xh} x_2 + W_{hh} h_1 + b_h) \\
 \vdots \\
 h_T &= f(W_{xh} x_T + W_{hh} h_{T-1} + b_h)
-\end{align*}
-$$
+\end{align*} 
+$$ 
 
-출력은 각 시점별로:
+The output at each time step is:
 
-$$
+$$ 
 y_t = g(W_{hy} h_t + b_y)
-$$
+$$ 
 
 ---
 
-## 3. 손실 함수
+## 3. Loss Function
 
-시퀀스 전체의 손실은 모든 시점의 손실 평균으로 계산된다.
+The total loss of the sequence is calculated as the average of the losses at all time steps.
 
-$$
+$$ 
 \mathcal{L} = -\frac{1}{T} \sum_{t=1}^{T} \sum_{j=1}^{C} y_{tj} \log(\hat{y}_{tj})
-$$
+$$ 
 
 ---
 
-## 4. 역전파 (BPTT: Backpropagation Through Time)
+## 4. Backpropagation (BPTT: Backpropagation Through Time)
 
-RNN의 학습은 **시간 역전파(Backpropagation Through Time, BPTT)** 알고리즘으로 수행된다.
-기본 아이디어는 MLP의 역전파를 “시간 축”으로 확장하는 것이다.
+RNN learning is performed using the **Backpropagation Through Time (BPTT)** algorithm.
+The basic idea is to extend the backpropagation of MLP along the "time axis".
 
-### 4.1 기본 수식
+### 4.1 Basic Equations
 
-출력층 오차:
+Output layer error:
 
-$$
+$$ 
 \delta^{(y)}_t = \hat{y}_t - y_t
-$$
+$$ 
 
-은닉층 오차 (역전파):
+Hidden layer error (backpropagation):
 
-$$
+$$ 
 \delta^{(h)}*t = (\delta^{(y)}*t W*{hy}^\top + \delta^{(h)}*{t+1} W_{hh}^\top) \odot f'(h_t)
-$$
+$$ 
 
-여기서 $\odot$ 는 요소별 곱(Hadamard product)이다.
+Here, $\odot$ is the element-wise product (Hadamard product).
 
-### 4.2 기울기 누적
+### 4.2 Gradient Accumulation
 
-모든 시점의 기울기를 누적하여 가중치 업데이트에 사용하며, 기울기 폭주(exploding gradients)를 방지하기 위해 기울기 클리핑(gradient clipping)을 적용한다:
+Gradients from all time steps are accumulated and used for weight updates, and gradient clipping is applied to prevent exploding gradients:
 
-$$
+$$ 
 \frac{\partial \mathcal{L}}{\partial W_{xh}} = \sum_{t=1}^{T} x_t^\top \delta^{(h)}*t \\
 \frac{\partial \mathcal{L}}{\partial W_{hh}} = \sum_{t=1}^{T} h_{t-1}^\top \delta^{(h)}*t \\
 \frac{\partial \mathcal{L}}{\partial W_{hy}} = \sum_{t=1}^{T} h_t^\top \delta^{(y)}_t
-$$
+$$ 
 
 ---
 
-## 5. 구현 코드 설명
+## 5. Implementation Code Description
 
-### 5.1 클래스 초기화
+### 5.1 Class Initialization
 
 ```python
 class VanillaRNN:
@@ -135,7 +134,7 @@ class VanillaRNN:
 
 ---
 
-### 5.2 순전파 (Forward Pass)
+### 5.2 Forward Pass
 
 ```python
 def forward(self, X):
@@ -150,7 +149,7 @@ def forward(self, X):
 
 ---
 
-### 5.3 역전파 (BPTT)
+### 5.3 Backpropagation (BPTT)
 
 ```python
 def backward(self, X, Y, hs, ys):
@@ -183,18 +182,18 @@ def backward(self, X, Y, hs, ys):
 
 ---
 
-### 5.4 학습 및 예측 유틸리티 함수
+### 5.4 Learning and Prediction Utility Functions
 
-*   `compute_loss(Y, ys)`: 실제 정답 `Y`와 모델의 예측 `ys`를 기반으로 교차 엔트로피 손실을 계산한다.
-*   `prepare_sequences(words, char_to_idx)`: 주어진 단어 리스트를 문자 단위의 원-핫 인코딩 시퀀스로 변환하여 학습 데이터(`X_train`, `Y_train`)를 준비한다.
-*   `train_words(words, char_to_idx, epochs, print_interval)`: `prepare_sequences`를 호출하여 학습 데이터를 준비한 후, `train` 메서드를 사용하여 모델을 학습시키는 편리한 래퍼 함수이다.
-*   `predict(seed_text, char_to_idx, idx_to_char, length)`: 주어진 `seed_text`를 시작으로 RNN 모델을 사용하여 `length`만큼 다음 문자를 예측하여 시퀀스를 생성한다. 예측 과정에서 이전 예측 문자가 다음 시점의 입력으로 사용된다.
+*   `compute_loss(Y, ys)`: Calculates cross-entropy loss based on actual answers `Y` and model predictions `ys`.
+*   `prepare_sequences(words, char_to_idx)`: Prepares training data (`X_train`, `Y_train`) by converting a given list of words into character-level one-hot encoded sequences.
+*   `train_words(words, char_to_idx, epochs, print_interval)`: A convenient wrapper function that prepares training data by calling `prepare_sequences` and then trains the model using the `train` method.
+*   `predict(seed_text, char_to_idx, idx_to_char, length)`: Generates a sequence by predicting the next character `length` times using the RNN model, starting with the given `seed_text`. During prediction, the previously predicted character is used as the input for the next time step.
 
-## 6. 예제: 문자 단위 RNN (Character-Level RNN)
+## 6. Example: Character-Level RNN
 
 ```python
-# 입력: ["h", "e", "l", "l", "o"]
-# 출력: ["e", "l", "l", "o", " "]
+# Input: ["h", "e", "l", "l", "o"]
+# Output: ["e", "l", "l", "o", " "]
 X = np.eye(5)  # One-hot encoding
 Y = np.roll(X, -1, axis=0)
 
@@ -208,29 +207,28 @@ for epoch in range(1000):
 
 ---
 
-## 7. 시각화
+## 7. Visualization
 
-* 은닉 상태의 변화를 t-SNE 등으로 시각화하면 **시퀀스 내 문맥적 패턴**을 관찰할 수 있다.
-* 출력 확률을 heatmap으로 표현하면 모델의 “예측 분포”를 직관적으로 이해할 수 있다.
-
----
-
-## 8. 결론
-
-Vanilla RNN은 가장 기본적인 순환 신경망으로, `cupy`를 활용하여 GPU 가속을 지원한다.
-시퀀스 데이터를 처리할 수 있으나 **장기 의존성 문제(Long-Term Dependency)** 로 인해
-긴 문맥을 기억하는 데 어려움이 있다.
-
-이 한계를 극복하기 위해 이후에 **LSTM**과 **GRU**가 등장한다.
+*   Visualizing changes in hidden states with t-SNE, etc., allows observation of **contextual patterns within sequences**.
+*   Representing output probabilities as a heatmap provides an intuitive understanding of the model's "prediction distribution".
 
 ---
 
-### 🔗 다음 단계
+## 8. Conclusion
 
-| 모델        | 특징                          |
-| --------- | --------------------------- |
-| LSTM      | 게이트 구조로 장기 의존성 해결           |
-| GRU       | LSTM보다 간단한 구조로 유사 성능        |
-| BiRNN     | 양방향 문맥 정보 학습                |
-| Seq2Seq   | 인코더-디코더 구조, 번역/요약 등 응용      |
-| Attention | 선택적 정보 집중 (Transformer의 기초) |
+Vanilla RNN is the most basic recurrent neural network and supports GPU acceleration using `cupy`.
+While it can process sequence data, it has difficulty remembering long contexts due to the **long-term dependency problem**.
+
+To overcome this limitation, **LSTM** and **GRU** emerged later.
+
+---
+
+### 🔗 Next Steps
+
+| Model        | Features                                  |
+| ------------ | ----------------------------------------- |
+| LSTM         | Solves long-term dependency with gate structure |
+| GRU          | Similar performance with simpler structure than LSTM |
+| BiRNN        | Learns bidirectional contextual information |
+| Seq2Seq      | Encoder-Decoder structure, applied to translation/summarization |
+| Attention    | Selective information focusing (basis of Transformer) |

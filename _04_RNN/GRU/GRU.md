@@ -1,69 +1,68 @@
-
-# 🧠 GRU (Gated Recurrent Unit, 게이트 순환 신경망)
-
----
-
-## 📘 1. 개요
-
-**GRU**는 2014년에 **Cho et al.**이 제안한 RNN의 한 변형으로,
-LSTM과 비슷하게 **장기 의존성 문제(Long-Term Dependency)** 를 해결하기 위해 만들어진 모델이다.
-
-LSTM보다 **구조가 단순**해서 **학습 속도가 빠르며**,
-매우 비슷한 성능을 내기 때문에 많은 실무 모델에서도 자주 쓰인다.
+# 🧠 GRU (Gated Recurrent Unit)
 
 ---
 
-## 🔍 2. LSTM과의 비교
+## 📘 1. Overview
 
-| 항목            | LSTM                | GRU               |
-| ------------- | ------------------- | ----------------- |
-| 게이트 수         | 3개 (입력, 망각, 출력 게이트) | 2개 (업데이트, 리셋 게이트) |
-| 셀 상태 $c_t$  | 있음                  | 없음                |
-| 은닉 상태 $h_t$ | 있음                  | 있음 (셀 상태 = 은닉 상태) |
-| 학습 속도         | 느림                  | 빠름                |
-| 구조 복잡도        | 높음                  | 낮음                |
+**GRU** is a variant of RNN proposed by **Cho et al.** in 2014,
+and similar to LSTM, it is a model designed to solve the **Long-Term Dependency problem**.
 
-➡️ GRU는 **셀 상태를 따로 두지 않고**, 모든 정보가 **은닉 상태 $h_t$** 안에 담긴다.
+It has a **simpler structure** than LSTM, resulting in **faster learning speed**,
+and is often used in many practical models due to its very similar performance.
 
 ---
 
-## ⚙️ 3. 수식 정리
+## 🔍 2. Comparison with LSTM
 
-GRU의 동작은 다음과 같은 수식으로 표현된다.
+| Item            | LSTM                | GRU               |
+| --------------- | ------------------- | ----------------- |
+| Number of gates | 3 (Input, Forget, Output gates) | 2 (Update, Reset gates) |
+| Cell state $c_t$  | Exists              | None              |
+| Hidden state $h_t$ | Exists              | Exists (Cell state = Hidden state) |
+| Learning speed  | Slow                | Fast              |
+| Structure complexity | High                | Low               |
 
-1️⃣ **업데이트 게이트 (Update gate)**
-과거 정보를 얼마나 유지할지를 결정
+➡️ GRU **does not have a separate cell state**, and all information is contained within the **hidden state $h_t$**.
+
+---
+
+## ⚙️ 3. Equation Summary
+
+The operation of GRU is expressed by the following equations.
+
+1️⃣ **Update gate**
+Determines how much past information to retain.
 $$
-z_t = \sigma(W_z x_t + U_z h_{t-1} + b_z)
+ z_t = \sigma(W_z x_t + U_z h_{t-1} + b_z)
 $$
 
-2️⃣ **리셋 게이트 (Reset gate)**
-과거 정보를 얼마나 잊을지를 결정
-$$
-r_t = \sigma(W_r x_t + U_r h_{t-1} + b_r)
-$$
-
-3️⃣ **후보 은닉 상태 (Candidate hidden state)**
-새로운 정보를 계산
-$$
-\tilde{h}*t = \tanh(W_h x_t + U_h (r_t \odot h*{t-1}) + b_h)
+2️⃣ **Reset gate**
+Determines how much past information to forget.
+$$ 
+ r_t = \sigma(W_r x_t + U_r h_{t-1} + b_r)
 $$
 
-4️⃣ **최종 은닉 상태 (Hidden state update)**
-이전 상태와 새로운 상태를 섞어서 최종 은닉 상태 결정
+3️⃣ **Candidate hidden state**
+Calculates new information.
+$$ 
+ \tilde{h}*t = \tanh(W_h x_t + U_h (r_t \odot h*{t-1}) + b_h)
 $$
-h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t
+
+4️⃣ **Hidden state update**
+Combines the previous state and the new state to determine the final hidden state.
+$$ 
+ h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t
 $$
 
 ---
 
-## 💻 4. GRU Python 구현 예시
+## 💻 4. GRU Python Implementation Example
 
-이 예시는 `numpy`를 기반으로 한 GRU의 기본적인 구현을 보여준다. GPU 가속을 위해서는 `numpy` 대신 `cupy`를 활용할 수 있다.
+This example shows a basic implementation of GRU based on `numpy`. For GPU acceleration, `cupy` can be used instead of `numpy`.
 
 ```python
 # GRU (Gated Recurrent Unit)
-# 2025-10-11: Vanilla GRU 구현
+# 2025-10-11: Vanilla GRU Implementation
 
 import numpy as np
 
@@ -72,7 +71,7 @@ class VanillaGRU:
         self.n_x, self.n_h, self.n_y = n_x, n_h, n_y
         self.lr = lr
 
-        # 가중치 초기화
+        # Initialize weights
         self.Wz = np.random.randn(n_x, n_h) * 0.01
         self.Uz = np.random.randn(n_h, n_h) * 0.01
         self.bz = np.zeros((1, n_h))
@@ -122,7 +121,7 @@ class VanillaGRU:
             dby += dy
             dh_next = dy @ self.Why.T + dh_next
 
-        # 이 예시에서는 간단화를 위해 게이트별 Backprop 계산은 생략하고 출력층 관련 가중치만 업데이트한다.
+        # For simplicity, this example omits Backprop calculations for each gate and only updates output layer weights.
         self.Why -= self.lr * np.clip(dWhy, -5, 5)
         self.by -= self.lr * np.clip(dby, -5, 5)
 
@@ -138,7 +137,7 @@ class VanillaGRU:
         _, ys = self.forward(X)
         return np.argmax(ys, axis=2)
 
-# 예시: "hi" → "ih"
+# Example: "hi" → "ih"
 if __name__ == "__main__":
     vocab_size = 3
     X = np.eye(vocab_size)
@@ -150,32 +149,32 @@ if __name__ == "__main__":
 
 ---
 
-## 🧩 5. GRU의 장점
+## 🧩 5. Advantages of GRU
 
-| 장점          | 설명                        |
-| ----------- | ------------------------- |
-| 🏃‍♂️ 빠른 학습 | LSTM보다 게이트 수가 적어서 계산량이 감소 |
-| 💾 적은 메모리   | 파라미터 개수가 줄어들어 효율적         |
-| ⚖️ 비슷한 성능   | LSTM 수준의 장기 의존성 학습 가능     |
-| 🔧 단순한 구조   | 구현 및 튜닝이 쉬움               |
-
----
-
-## 🧠 6. 주요 활용 분야
-
-| 분야         | 설명                              |
-| ---------- | ------------------------------- |
-| **텍스트 생성** | 문장 자동 완성, 챗봇 응답                 |
-| **음성 처리**  | TTS(Text-to-Speech), 음성 감정 인식   |
-| **시계열 예측** | 주가, 날씨, 센서 데이터 예측               |
-| **기계 번역**  | Seq2Seq 구조의 Encoder-Decoder로 활용 |
+| Advantage        | Description                               |
+| ---------------- | ----------------------------------------- |
+| 🏃‍♂️ Fast learning | Fewer gates than LSTM, reducing computation |
+| 💾 Less memory   | More efficient due to fewer parameters    |
+| ⚖️ Similar performance | Capable of long-term dependency learning at LSTM level |
+| 🔧 Simple structure | Easy to implement and tune                |
 
 ---
 
-## 🌟 7. GRU는 어디에 쓰면 좋은가?
+## 🧠 6. Key Application Areas
 
-* **실시간 처리**가 필요한 곳 (예: 실시간 번역, 대화형 AI)
-* **데이터 양이 적거나 짧은 시퀀스**를 다루는 곳
-* **모바일/임베디드 환경** (빠른 추론과 낮은 연산량이 중요할 때)
+| Field            | Description                               |
+| ---------------- | ----------------------------------------- |
+| **Text generation** | Autocompletion, chatbot responses         |
+| **Speech processing** | TTS (Text-to-Speech), speech emotion recognition |
+| **Time series prediction** | Stock prices, weather, sensor data prediction |
+| **Machine translation** | Utilized as Encoder-Decoder in Seq2Seq structure |
 
-이 구현은 `numpy` 기반이지만, `cupy`를 활용하여 GPU 가속을 적용하면 더욱 빠른 학습 및 추론이 가능하다.
+---
+
+## 🌟 7. When is GRU good to use?
+
+*   Where **real-time processing** is required (e.g., real-time translation, conversational AI)
+*   Dealing with **small amounts of data or short sequences**
+*   **Mobile/embedded environments** (when fast inference and low computation are important)
+
+This implementation is `numpy`-based, but GPU acceleration can be achieved by utilizing `cupy` for faster training and inference.

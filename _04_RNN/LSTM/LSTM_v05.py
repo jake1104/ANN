@@ -1,5 +1,5 @@
 # Change Log
-# 2025-10-09: Adam 옵티마이저, 체크포인트, 학습률 스케줄러
+# 2025-10-09: Adam Optimizer, Checkpoints, Learning Rate Scheduler
 
 import cupy as cp
 import numpy as np
@@ -63,6 +63,7 @@ class LSTM:
       x_t = X_embedded[:, t, :]
       gates = x_t @ self.params['W_x'] + h_prev @ self.params['W_h'] + self.params['b']
       h_t, c_t, i_t, f_t, o_t, g_t = self._fused_forward_cell(gates[:, :self.params['W_h'].shape[0]], gates[:, self.params['W_h'].shape[0]:2*self.params['W_h'].shape[0]], gates[:, 2*self.params['W_h'].shape[0]:3*self.params['W_h'].shape[0]], gates[:, 3*self.params['W_h'].shape[0]:], c_prev)
+      hs[:, t, :] = h_t # Store hidden state
       ys[:, t, :] = self.softmax(h_t @ self.params['Why'] + self.params['by'])
       caches.append((x_t, h_prev, c_prev, i_t, f_t, o_t, g_t, c_t, h_t)); h_prev, c_prev = h_t, c_t
     caches.append(X_batch_idx)
