@@ -16,6 +16,8 @@ Currently, the repository includes implementations for the following neural netw
         * **Example**: Word Completion
     *   LSTM (Long Short-Term Memory): `_04_RNN/LSTM/`
         * **Example**: Word Completion
+    *   GRU (Gated Recurrent Unit): `_04_RNN/GRU/`
+        * **Example**: Word Completion
 
 Each model directory typically contains the implementation, examples, and relevant documentation.
 
@@ -23,9 +25,7 @@ Each model directory typically contains the implementation, examples, and releva
 
 We plan to expand this repository to include:
 
-*   **GRU**: Implementation of Gated Recurrent Unit (code not yet implemented).
 *   **Transformer Models**: Implementation of attention-based architectures.
-*   **Optimization Techniques**: Exploration and implementation of various optimization algorithms for neural networks.
 *   **Training Pipeline Construction**: Building robust and scalable training pipelines.
 *   **Large Model Design**: Principles and practices for designing and implementing large-scale neural network models.
 
